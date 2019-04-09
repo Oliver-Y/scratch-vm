@@ -100,6 +100,7 @@ class MicroBit {
             buttonB: 0,
             touchPins: [0, 0, 0],
             gestureState: 0,
+            lightVal: 0,
             ledMatrixState: new Uint8Array(5)
         };
 
@@ -174,6 +175,10 @@ class MicroBit {
      */
     get tiltX () {
         return this._sensors.tiltX;
+    }
+
+    get lightVal() {
+      return this._sensors.lightVal;
     }
 
     /**
@@ -313,7 +318,7 @@ class MicroBit {
     _onMessage (base64) {
         // parse data
         const data = Base64Util.base64ToUint8Array(base64);
-
+        console.log(data); //Check
         this._sensors.tiltX = data[1] | (data[0] << 8);
         if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
         this._sensors.tiltY = data[3] | (data[2] << 8);
@@ -327,6 +332,8 @@ class MicroBit {
         this._sensors.touchPins[2] = data[8];
 
         this._sensors.gestureState = data[9];
+
+        this._sensors.lightVal = data[13];
 
         // cancel disconnect timeout and start a new one
         window.clearTimeout(this._timeoutID);
@@ -728,6 +735,16 @@ class Scratch3MicroBitBlocks {
                 },
                 '---',
                 {
+                  opcode: 'getLightVal',
+                  text: formatMessage({
+                    id: 'microbit.lightVal',
+                    default: 'light value',
+                    description: 'how much light the matrix measures on a scale of 0-255'
+                  }),
+                  blockType: BlockType.REPORTER,
+                },
+                '---',
+                {
                     opcode: 'whenPinConnected',
                     text: formatMessage({
                         id: 'microbit.whenPinConnected',
@@ -900,6 +917,10 @@ class Scratch3MicroBitBlocks {
      */
     getTiltAngle (args) {
         return this._getTiltAngle(args.DIRECTION);
+    }
+
+    getLightVal(){
+      return this._peripheral.lightVal;
     }
 
     /**
